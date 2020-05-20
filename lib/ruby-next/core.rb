@@ -2,6 +2,8 @@
 
 require "set"
 
+require_relative "utils"
+
 module RubyNext
   module Core
     # Patch contains the extension implementation
@@ -179,8 +181,8 @@ require_relative "core/hash/deconstruct_keys"
 require_relative "core/struct/deconstruct"
 require_relative "core/struct/deconstruct_keys"
 
-# TruffleRuby doesn't support module refinements
-unless defined?(::TruffleRuby)
+# Only use refinements when modules are supported
+if RubyNext::Utils.refine_modules?
   # Generate refinements
   RubyNext.module_eval do
     RubyNext::Core.patches.refined.each do |mod, patches|
