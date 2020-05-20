@@ -36,7 +36,12 @@ end
 at_exit do
   $stderr = orig_stderr
 
+  puts "ERROR AT EXIT: #{$!}"
+
   if NoMethodError === $! || SyntaxError === $!
+    puts "FILE: #{$0}"
+    puts "EXIST? #{File.exist?($0)}" if $0
+
     if $0 && File.exist?($0)
       load($0)
       exit!(0)
