@@ -24,6 +24,7 @@ module RubyNext
 
       def parse!(args)
         print_help = false
+        print_rewriters = false
         @min_version = MIN_SUPPORTED_VERSION
         @single_version = false
 
@@ -40,6 +41,12 @@ module RubyNext
 
           opts.on("--single-version", "Only create one version of a file (for the earliest Ruby version)") do
             @single_version = true
+          end
+
+          opts.on("--list-rewriters", "Show the list of available rewriters") do
+            require "ruby-next/language/edge"
+            require "ruby-next/language/proposed"
+            print_rewriters = true
           end
 
           opts.on("--edge", "Enable edge (master) Ruby features") do |val|
@@ -69,6 +76,11 @@ module RubyNext
         optparser.parse!(args)
 
         @lib_path = args[0]
+
+        if print_rewriters
+          $stdout.puts format_rewriters
+          exit 0
+        end
 
         if print_help
           $stdout.puts optparser.help
@@ -148,6 +160,14 @@ module RubyNext
         end
 
         log "Generated: #{next_path}"
+      end
+
+      def format_rewriters
+        Language.rewriters
+          .uniq
+          .map { |rw| "#{rw::NAME} (\"#{rw::SYNTAX_PROBE}\")" }
+          .sort
+          .join("\n")
       end
 
       alias single_version? single_version
