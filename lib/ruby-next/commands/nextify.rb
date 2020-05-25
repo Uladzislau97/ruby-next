@@ -28,6 +28,8 @@ module RubyNext
         @min_version = MIN_SUPPORTED_VERSION
         @single_version = false
 
+        options = {}
+
         optparser = base_parser do |opts|
           opts.banner = "Usage: ruby-next nextify DIRECTORY_OR_FILE [options]"
 
@@ -36,11 +38,19 @@ module RubyNext
           end
 
           opts.on("--min-version=VERSION", "Specify the minimum Ruby version to support") do |val|
+            options[:min_version] = true
             @min_version = Gem::Version.new(val)
           end
 
           opts.on("--single-version", "Only create one version of a file (for the earliest Ruby version)") do
             @single_version = true
+          end
+
+          opts.on("--rewrite=REWRITER_NAME", Language.possible_rewriter_names, "Specify a rewriter to use") do |val|
+            options[:rewriter] = true
+            @single_version = true
+            rewriter = Language.rewriter_by_name(val)
+            Language.rewriters << rewriter unless Language.rewriters.include?(rewriter)
           end
 
           opts.on("--list-rewriters", "Show the list of available rewriters") do
@@ -88,6 +98,11 @@ module RubyNext
         unless lib_path&.then(&File.method(:exist?))
           $stdout.puts "Path not found: #{lib_path}"
           $stdout.puts optparser.help
+          exit 2
+        end
+
+        if options[:min_version] && options[:rewriter]
+          $stdout.puts "--min-version couldn't be used simultaneously with --rewrite"
           exit 2
         end
 

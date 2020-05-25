@@ -151,6 +151,10 @@ module RubyNext
         possible_rewriters.map { |rw| rw.const_get :NAME }
       end
 
+      def rewriter_by_name(name)
+        possible_rewriters.find { |rw| rw.const_get(:NAME) == name }
+      end
+
       private
 
       attr_writer :watch_dirs
