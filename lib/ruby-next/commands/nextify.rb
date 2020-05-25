@@ -44,8 +44,6 @@ module RubyNext
           end
 
           opts.on("--list-rewriters", "Show the list of available rewriters") do
-            require "ruby-next/language/edge"
-            require "ruby-next/language/proposed"
             print_rewriters = true
           end
 
@@ -163,10 +161,9 @@ module RubyNext
       end
 
       def format_rewriters
-        Language.rewriters
+        Language.possible_rewriters
           .uniq
           .map { |rw| "#{rw::NAME} (\"#{rw::SYNTAX_PROBE}\")" }
-          .sort
           .join("\n")
       end
 

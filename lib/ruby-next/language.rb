@@ -60,7 +60,7 @@ module RubyNext
     end
 
     class << self
-      attr_accessor :rewriters
+      attr_accessor :rewriters, :possible_rewriters
       attr_reader :watch_dirs
 
       attr_accessor :strategy
@@ -147,12 +147,17 @@ module RubyNext
         @current_rewriters ||= rewriters.select(&:unsupported_syntax?)
       end
 
+      def possible_rewriter_names
+        possible_rewriters.map { |rw| rw.const_get :NAME }
+      end
+
       private
 
       attr_writer :watch_dirs
     end
 
     self.rewriters = []
+    self.possible_rewriters = []
     self.watch_dirs = %w[app lib spec test].map { |path| File.join(Dir.pwd, path) }
     self.mode = ENV.fetch("RUBY_NEXT_TRANSPILE_MODE", "ast").to_sym
 
@@ -160,17 +165,30 @@ module RubyNext
 
     require "ruby-next/language/rewriters/args_forward"
     rewriters << Rewriters::ArgsForward
+    possible_rewriters << Rewriters::ArgsForward
 
     require "ruby-next/language/rewriters/numbered_params"
     rewriters << Rewriters::NumberedParams
+    possible_rewriters << Rewriters::NumberedParams
 
     require "ruby-next/language/rewriters/pattern_matching"
     rewriters << Rewriters::PatternMatching
+    possible_rewriters << Rewriters::PatternMatching
 
     # Put endless range in the end, 'cause Parser fails to parse it in
     # pattern matching
     require "ruby-next/language/rewriters/endless_range"
     rewriters << Rewriters::EndlessRange
+    possible_rewriters << Rewriters::EndlessRange
+
+    require "ruby-next/language/rewriters/method_reference"
+    possible_rewriters << Rewriters::MethodReference
+
+    require "ruby-next/language/rewriters/endless_method"
+    possible_rewriters << Rewriters::EndlessMethod
+
+    require "ruby-next/language/rewriters/right_hand_assignment"
+    possible_rewriters << Rewriters::RightHandAssignment
 
     if ENV["RUBY_NEXT_EDGE"] == "1"
       require "ruby-next/language/edge"
